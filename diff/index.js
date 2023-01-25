@@ -39,6 +39,6 @@ diff.split("\n").forEach((part) => {
 		const color = 'grey';
 		process.stderr.write(part[color] + "\n");
 	}
-  });
+});
   
-  console.log();
+console.log();
