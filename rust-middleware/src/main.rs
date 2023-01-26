@@ -1,3 +1,14 @@
+struct AppMiddleware;
+
+impl AppMiddleware {
+    fn new() -> AppMiddleware {
+        AppMiddleware {}
+    }
+
+    fn call(&self, app: App) -> App {
+        app
+    }
+}
 
 struct ServiceRequest {
     body: String,
@@ -50,12 +61,17 @@ struct App {
     res: ServiceResponse,
 }
 
+#[allow(dead_code)]
 impl App {
     fn new(req: ServiceRequest, res: ServiceResponse) -> App {
         App {
             req,
             res
         }
+    }
+
+    fn add(self, middleware: AppMiddleware) -> App {
+        middleware.call(self)
     }
     
     fn get_request(&self) -> &ServiceRequest {
@@ -68,15 +84,20 @@ impl App {
 }
 
 trait Middleware {
-    fn middleware(self) -> App;
+    fn new() -> AppMiddleware;
+    fn call(&self, app: App) -> App;
 }
 
-impl Middleware for App {
-    fn middleware(mut self) -> Self {
-        let request: &ServiceRequest = self.get_request();
+impl Middleware {
+    fn new() -> AppMiddleware {
+        AppMiddleware {}
+    }
+
+    fn call(&self, mut app: App) -> App {
+        let request: &ServiceRequest = app.get_request();
         println!("Middleware {}", request.get_body());
-        self.res.set_body("Response Body here".to_string());
-        self
+        app.res.set_body("Response Body here".to_string());
+        app
     }
 }
 
@@ -84,5 +105,8 @@ fn main() {
     let request: ServiceRequest = ServiceRequest::new(&"Hello World!".to_string());
     let response: ServiceResponse = ServiceResponse::new();
     let app: App = App::new(request, response);
-    app.middleware().done();
+    app
+        .add(Middleware::new())
+        .add(Middleware::new())
+        .done();
 }
