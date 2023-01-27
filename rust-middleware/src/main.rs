@@ -1,13 +1,6 @@
-struct AppMiddleware;
-
-impl AppMiddleware {
-    fn new() -> AppMiddleware {
-        AppMiddleware {}
-    }
-
-    fn call(&self, app: App) -> App {
-        app
-    }
+trait AppMiddleware {
+    fn new() -> Self;
+    fn call(&self, app: App) -> App;
 }
 
 struct ServiceRequest {
@@ -70,7 +63,7 @@ impl App {
         }
     }
 
-    fn add(self, middleware: AppMiddleware) -> App {
+    fn add<S: AppMiddleware>(self, middleware: S) -> App {
         middleware.call(self)
     }
     
@@ -83,20 +76,34 @@ impl App {
     }
 }
 
-trait Middleware {
-    fn new() -> AppMiddleware;
-    fn call(&self, app: App) -> App;
-}
+struct Middleware1;
 
-impl Middleware {
-    fn new() -> AppMiddleware {
-        AppMiddleware {}
+impl AppMiddleware for Middleware1 {
+    fn new() -> Middleware1 {
+        Middleware1 {}
     }
 
     fn call(&self, mut app: App) -> App {
         let request: &ServiceRequest = app.get_request();
-        println!("Middleware {}", request.get_body());
-        app.res.set_body("Response Body here".to_string());
+        println!("Middleware1 {}", request.get_body());
+        app.res.set_body("First Response Body".to_string());
+        app
+    }
+}
+
+struct Middleware2;
+
+impl AppMiddleware for Middleware2 {
+    fn new() -> Middleware2 {
+        Middleware2 {}
+    }
+
+    fn call(&self, mut app: App) -> App {
+        let request: &ServiceRequest = app.get_request();
+        println!("Middleware2 {}", request.get_body());
+        let second_response: &str = "Second Response Body";
+        let response_body: String = format!("{} {}", app.res.get_body(), second_response);
+        app.res.set_body(response_body);
         app
     }
 }
@@ -106,7 +113,7 @@ fn main() {
     let response: ServiceResponse = ServiceResponse::new();
     let app: App = App::new(request, response);
     app
-        .add(Middleware::new())
-        .add(Middleware::new())
+        .add(Middleware1::new())
+        .add(Middleware2::new())
         .done();
 }
