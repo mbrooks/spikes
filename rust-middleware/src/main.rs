@@ -52,6 +52,7 @@ impl ServiceResponse {
 struct App {
     req: ServiceRequest,
     res: ServiceResponse,
+    done: bool,
 }
 
 #[allow(dead_code)]
@@ -59,11 +60,17 @@ impl App {
     fn new(req: ServiceRequest, res: ServiceResponse) -> App {
         App {
             req,
-            res
+            res,
+            done: false,
         }
     }
 
     fn add<S: AppMiddleware>(self, middleware: S) -> App {
+        // if done, do nothing
+        if self.done {
+            return self
+        }
+
         middleware.call(self)
     }
     
@@ -87,6 +94,7 @@ impl AppMiddleware for Middleware1 {
         let request: &ServiceRequest = app.get_request();
         println!("Middleware1 {}", request.get_body());
         app.res.set_body("First Response Body".to_string());
+        app.done = true;
         app
     }
 }
