@@ -16,17 +16,17 @@ async fn main() -> io::Result<()> {
 
 		let (tx, mut rx) = mpsc::channel::<(Vec<u8>, SocketAddr)>(1_000);
 		tokio::spawn(async move {
-			while let Some((bytes, addr)) = rx.recv().await {
+			if let Some((bytes, addr)) = rx.recv().await {
 				let random: u64 = rand::thread_rng().gen_range(0..5);
 				let response = format!("rand: {}, {}", random, String::from_utf8_lossy(&bytes));
-	
+
 				let wait = time::Duration::from_secs(random);
 				thread::sleep(wait);
-	
+
 				println!("{}", response);
-	
+
 				let len = s.send_to(response.as_bytes(), &addr).await.unwrap();
-	          	println!("rand: {}, {:?} bytes sent", random, len);
+				println!("rand: {}, {:?} bytes sent", random, len);
 			}
 		});
 	
