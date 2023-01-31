@@ -1,6 +1,6 @@
 use tokio::sync::{oneshot, mpsc};
 use std::{thread, time};
-use std::{io, net::SocketAddr, sync::Arc};
+use std::io;
 
 struct MyActor {
     receiver: mpsc::Receiver<ActorMessage>,
@@ -41,7 +41,6 @@ impl MyActor {
     }    
 }
 
-#[derive(Clone)]
 pub struct MyActorHandle {
     sender: mpsc::Sender<ActorMessage>,
 }
