@@ -1,12 +1,3 @@
-use std::hash::{Hash, Hasher};
-
-use fasthash::{metro, MetroHasher};
-
-fn hash<T: Hash>(t: &T) -> u64 {
-    let mut s: MetroHasher = Default::default();
-    t.hash(&mut s);
-    s.finish()
-}
 
 
 fn main() {
